@@ -325,13 +325,15 @@ batss.trial = function(int,data,model,link,family,beta,prob0,
             break
         # continue
         }else{
+          
             # prob per group
             if(!is.null(RAR)){
                 # prob per group
                 assign("posterior",mx.posterior_RAR.lt[lw,id.target$active], envir = env)
                 assign("active",id.group$active, envir = env)
                 #prob = .eval(RAR,envir=env) 
-                assign("n",id.look[lw, id.group$id],envir = env)                                                 #assign ingredients to environment 'env' 
+                assign("n",unlist(id.look[lw, id.group$id]),envir = env)  
+                #assign ingredients to environment 'env' 
                 assign("ref",id.group$ref,envir = env)
                 assign("N",id.look$n[n.look],envir = env)
                 assign("RAR.control", RAR.control, envir = env)
@@ -383,13 +385,13 @@ batss.trial = function(int,data,model,link,family,beta,prob0,
             XB = X%*%beta[colnames(X)]
             assign("mu",switch(link,
                                "identity" = XB,
-                               "log" = exp(XB),
-                               "logit" = INLA::inla.link.logit(XB, inverse=TRUE),
-                               "probit" = INLA::inla.link.probit(XB, inverse=TRUE),
-                               "robit" = INLA::inla.link.robit(XB, inverse=TRUE),
-                               "cauchit" = INLA::inla.link.cauchit(XB, inverse=TRUE),
-                               "loglog" = INLA::inla.link.loglog(XB, inverse=TRUE),
-                               "cloglog" = INLA::inla.link.cloglog(XB, inverse=TRUE)),envir=env)
+                               "log"      = exp(XB),
+                               "logit"    = INLA::inla.link.logit(XB, inverse=TRUE),
+                               "probit"   = INLA::inla.link.probit(XB, inverse=TRUE),
+                               "robit"    = INLA::inla.link.robit(XB, inverse=TRUE),
+                               "cauchit"  = INLA::inla.link.cauchit(XB, inverse=TRUE),
+                               "loglog"   = INLA::inla.link.loglog(XB, inverse=TRUE),
+                               "cloglog"  = INLA::inla.link.cloglog(XB, inverse=TRUE)),envir=env)
             
             tmp_nam <- names(var)[1] 
             args_ <- plyr::.(n=m,mu=mu)                                                             # create a quoted(!) list of available 'ingredients' 
