@@ -202,7 +202,7 @@ batss.trial = function(int,data,model,link,family,beta,prob0,
     #if(INLA::inla.os.type()=="linux"&!is.na(linux.os)){
     #    INLA::inla.binary.install(os=linux.os,verbose=TRUE,md5.check=FALSE)       
     #    }
-    
+
     for(lw in 1:n.look){# lw=0; lw=lw+1
         # size
         #cat(.p("look:",lw,"\n"))

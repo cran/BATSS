@@ -4,17 +4,17 @@
 \alias{summary.batss}
 \title{Summary function for 'BATSS' outputs}
 \usage{
-\method{summary}{batss}(object, full = FALSE, ...)
+\method{summary}{batss}(object, extended = NULL, ...)
 }
 \arguments{
 \item{object}{An object of class 'batss' (i.e., output of the function \link{batss.glm}).}
 
-\item{full}{A logical indicating if a standard (full = FALSE, default) or extended output (full = TRUE) should be returned.}
+\item{extended}{A logical indicating if a standard (extended = FALSE, default) or extended output (extended = TRUE) should be returned. Default to \code{NULL} in which case the input of the argument \code{extended} chosen when generating \code{object} with \code{\link[=batss.glm]{batss.glm()}} is used.}
 
 \item{...}{Additional arguments affecting the summary produced.}
 }
 \value{
-Prints a summary for objects of class 'batss'.
+Object of class 'summary.batss'.
 }
 \description{
 Summary method function for objects of class 'batss'.
