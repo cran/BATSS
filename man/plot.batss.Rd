@@ -13,6 +13,7 @@
   legend = TRUE,
   ess = TRUE,
   percentage = TRUE,
+  beta = TRUE,
   col = c("#008B0040", "#8B3A3A40", "#8B897040", "#FF990075"),
   smooth = 1,
   ...
@@ -34,6 +35,8 @@
 \item{ess}{A \link[base]{logical} (with default set to \code{TRUE}) indicating if the expected sample size should be displayed in plots 2, 3 and 4, or a list with names \code{col}, \code{cex} and \code{bg} respectively indicating i/ the colour of the label as a character (plots 2, 3, and 4), ii/ the text expension level as a numerical value (plots 2, 3 and 4) and iii/ the background colour as a character (plot 3). The input \code{ess = TRUE} is equivalent to \code{ess = list(col="blue", cex=1, bg="#FFD70070")}.}
 
 \item{percentage}{A \link[base]{logical} (with default set to \code{TRUE}) indicating if the probability of stopping at each look should be displayed in plots 2 (as a percentage), or a list with names \code{col}, and \code{cex} indicating i/ the colour of the label as a character, ii/ the text expension level as a numerical value. The input \code{percentage = TRUE} is equivalent to \code{percentage = list(col="violet", cex=1)}.}
+
+\item{beta}{A \link[base]{logical} (with default set to \code{TRUE}) indicating if the assumed target parameter value(s) should be displayed in plot 4, or a list with names \code{col}, \code{lwd}, and \code{lty} respectively indicating i/ the colour of the target parameter value horizontal line(s) as a character, ii/ the thickness of the line(s) as a numerical value  and iii/ the type of line as an integer (see \link[graphics]{par} for details). The input \code{beta = TRUE} is equivalent to \code{beta = list(col="blue", lwd=1.5, lty=1)}.}
 
 \item{col}{A vector of length 4 specifying the colours to be used. Default to \code{c("#8B897040","#008B0040","#8B3A3A40","#FF990075")} where the last two digits of the hexadecimal strings specify the level of transparency. Refer to the Section 'colour specification' in \link[graphics]{par} for details. If the length of \code{col} equals 1, the same colour is used for all cases. For plots \code{1} and \code{2}, the 3rd colour of the vector \code{col} is used to display the barplot and boxplots.}
 

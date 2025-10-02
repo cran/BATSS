@@ -9,6 +9,7 @@
 #' @param legend A \link[base]{logical} (with default set to `TRUE`) if a legend should be added at the bottom of plots 3 and 4, or a list with names `height`, `cex` and `pt` respectively indicating i/ the fraction of the plot to be used for the legend as a numeric (default is `.15`), ii/ the character expansion factor relative to current `par("cex")` as a numeric (default to `1.25`), and iii/ the expansion factor(s) for the points as a numeric (default to `2`). The input `legend = TRUE` is equivalent to `legend = c(height=.15, cex=1, pt=2)`.
 #' @param ess A \link[base]{logical} (with default set to `TRUE`) indicating if the expected sample size should be displayed in plots 2, 3 and 4, or a list with names `col`, `cex` and `bg` respectively indicating i/ the colour of the label as a character (plots 2, 3, and 4), ii/ the text expension level as a numerical value (plots 2, 3 and 4) and iii/ the background colour as a character (plot 3). The input `ess = TRUE` is equivalent to `ess = list(col="blue", cex=1, bg="#FFD70070")`.
 #' @param percentage A \link[base]{logical} (with default set to `TRUE`) indicating if the probability of stopping at each look should be displayed in plots 2 (as a percentage), or a list with names `col`, and `cex` indicating i/ the colour of the label as a character, ii/ the text expension level as a numerical value. The input `percentage = TRUE` is equivalent to `percentage = list(col="violet", cex=1)`.
+#' @param beta A \link[base]{logical} (with default set to `TRUE`) indicating if the assumed target parameter value(s) should be displayed in plot 4, or a list with names `col`, `lwd`, and `lty` respectively indicating i/ the colour of the target parameter value horizontal line(s) as a character, ii/ the thickness of the line(s) as a numerical value  and iii/ the type of line as an integer (see \link[graphics]{par} for details). The input `beta = TRUE` is equivalent to `beta = list(col="blue", lwd=1.5, lty=1)`.
 #' @param col A vector of length 4 specifying the colours to be used. Default to `c("#8B897040","#008B0040","#8B3A3A40","#FF990075")` where the last two digits of the hexadecimal strings specify the level of transparency. Refer to the Section 'colour specification' in \link[graphics]{par} for details. If the length of `col` equals 1, the same colour is used for all cases. For plots `1` and `2`, the 3rd colour of the vector `col` is used to display the barplot and boxplots. 
 #' @param smooth A numerical (>0) indictating the level of smoothing of the violin plots (for plot `3`). Default to `1`. When `smooth=NULL`, the smoothing value is optimised in the \link[sm]{sm.density} function.
 #' @param ... Additional arguments affecting the plot produced, like ylim and ylab.
@@ -16,7 +17,7 @@
 #' @seealso [batss.glm()], the function generating S3 objects of class 'batss'. 
 #' @export
 plot.batss = function(x, which=1:4, ask=TRUE, hypothesis="H1", 
-                      title=TRUE, legend=TRUE, ess=TRUE, percentage=TRUE,
+                      title=TRUE, legend=TRUE, ess=TRUE, percentage=TRUE, beta=TRUE, 
                       col = c("#008B0040","#8B3A3A40","#8B897040","#FF990075"),
                       smooth = 1, ...){
     which.plot=rep(TRUE,4)
@@ -100,6 +101,23 @@ plot.batss = function(x, which=1:4, ask=TRUE, hypothesis="H1",
             }
         }
     }    
+    # beta
+    if(is.list(beta)){# 
+        beta.col = ifelse(!is.null(beta[["col"]]),beta[["col"]],"blue")
+        beta.lwd = ifelse(!is.null(beta[["lwd"]]),beta[["lwd"]],1.5)    
+        beta.lty = ifelse(!is.null(beta[["lty"]]),beta[["lty"]],1)    
+        percentage     = TRUE
+    }else{
+        if(!is.logical(beta)){
+            stop("beta should be a list or a logical")
+        }else{
+            if(beta){
+                beta.col = "blue"       
+                beta.lwd = 1.5
+                beta.lty = 1
+            }
+        }
+    }        
     # prep
     id.targetw = x[[hypothesis]]$target$par
     n.targetw  = nrow(id.targetw)
@@ -257,7 +275,7 @@ plot.batss = function(x, which=1:4, ask=TRUE, hypothesis="H1",
                 label_width  = strwidth(label,cex=ess.cex)
                 label_height = strheight(label,cex=ess.cex)
                 rect(gw+.05, violin$mean - label_height*3/4, 
-                     gw+.05+label_width, violin$mean + label_height*3/4, 
+                     gw+.05+label_width*11/10, violin$mean + label_height*3/4, 
                      col = ess.bg, border = NA)
                 text(gw,violin$mean,pos=4,label,
                      col=ess.col, cex=ess.cex)
@@ -306,7 +324,11 @@ plot.batss = function(x, which=1:4, ask=TRUE, hypothesis="H1",
                  col=dataw$col,ylim=ylimw,xlim=xlimw,
                  main=id.targetw$id[tw],xlab="Sample size",
                  ylab = "Estimates",pch=dataw$pch,cex=cex)
-            abline(h= id.targetw$beta[tw],col=col[5],lty=1)  
+            abline(h= id.targetw$beta[tw],col=beta.col,lty=beta.lty, lwd=beta.lwd)  
+            #if(!is.null(beta.label){
+            #    text(xlimw[1]+(xlimw[2]-xlimw[1]*.05),id.targetw$beta[tw],
+            #         beta.label, col=beta.col, cex=beta.cex, pos=3)
+            #}
             if(ess){   
                 abline(v= mean(ar.inf.rt4[,tw,"n"]),col=ess.col,lty=3)
                 axis(3,mean(ar.inf.rt4[,tw,"n"]),tick=FALSE,

@@ -5,6 +5,16 @@
 #' @param extended A logical indicating if a standard (extended = FALSE, default) or extended output (extended = TRUE) should be returned. Default to `NULL` in which case the input of the argument `extended` chosen when generating `object` with [batss.glm()] is used.
 #' @param ... Additional arguments affecting the summary produced.
 #' @returns Object of class 'summary.batss'.
+#' @returns The function [summary.batss] returns an S3 list of class 'summary.batss' with available print functions. The list elements are
+#' \itemize{
+#'   \item beta - A data frame providing information related to the beta parameter vector, such as parameter names and values, for example.
+#'   \item look - A data frame providing information related to looks, like sample size of a given interim (m) and cumulative sample size at a given interim (n), for example.
+#'   \item par - A list providing different information, like the used seeds (seed) and the groups (group), for example.
+#'   \item H1 - A list providing trial aggregated results under the alternative, like the probability of efficacy, futility, or both, per arm or globally (`object$H1$target`), the probability of stopping early for efficacy (`object$H1$efficacy`) and futility (`object$H1$futility`), the sample size expectation, standard deviation, and quantiles 0.1, 0.5 and 0.9, per group and overall (`object$H1$summary.sample.sizes`), the probabilities associated to each combination of efficacy and futility per group (scenario).
+#'   \item H0 - A list providing trial aggregated results under the global null hypothesis (same structure as H1).
+#'   \item call - The matched call.
+#'   \item type - The type of 'BATSS' analysis (only 'glm' is currently available).
+#' }
 #' @seealso [batss.glm()], the function generating S3 objects of class 'batss'. 
 #' @export
 summary.batss = function(object, extended=NULL, ...){
@@ -24,7 +34,13 @@ summary.batss = function(object, extended=NULL, ...){
 
   if (object$par$H0) {
     
-    res$H0$sample.sizes <- object$H0$sample[,1:sum(object$beta$target)]
+    # sample sizes
+    res$H0$sample.sizes <- object$H0$sample[,1:sum(object$beta$target)]    
+    # target parameters
+    res$H0$target <- object$H0$target
+    temp = rbind(object$H0$target$par,object$H0$target$global)
+    if(all(temp$both==0)){temp = temp[,colnames(temp)!="both"]}       
+    res$H0$target <- temp
     # efficacy    
     temp = rbind(object$H0$efficacy$par,object$H0$efficacy$global)
     temp[,1][-(1:nrow(object$H0$efficacy$par))] = ""
@@ -57,7 +73,13 @@ summary.batss = function(object, extended=NULL, ...){
   
   if(object$par$H1){
 
+    # sample sizes
     res$H1$sample.sizes <- object$H1$sample[,1:sum(object$beta$target)]
+    # target parameters
+    res$H1$target <- object$H1$target
+    temp = rbind(object$H1$target$par,object$H1$target$global)
+    if(all(temp$both==0)){temp = temp[,colnames(temp)!="both"]}       
+    res$H1$target <- temp
     # efficacy    
     temp = rbind(object$H1$efficacy$par,object$H1$efficacy$global)
     temp[,1][-(1:nrow(object$H1$efficacy$par))] = ""
@@ -133,6 +155,12 @@ print.summary.batss = function(x, ...){
   objectw = object$beta
   colnames(objectw)[1] = ""
   print(objectw,row.names=FALSE)
+  cat("\n")
+  cli_h3("Sample size per interim analyis:\n")
+  objectw = object$sample
+  colnames(objectw)[1] = ""
+  print(objectw,row.names=FALSE)
+
   # H0
   if(object$par$H0){
     cat("\n\n")
@@ -142,9 +170,7 @@ print.summary.batss = function(x, ...){
     #
     cat("\n")
     cli_h3("Target parameters:\n")
-    temp = cbind(object$H0$efficacy[,-(5:6)],object$H0$futility[,7])
-    colnames(temp)[c(1,5,6)] = c("","efficacy","futility")
-    print(temp,row.names=FALSE)
+    print(object$H0$target,row.names=FALSE)
     #
     if(object$extended>0){
       cat("\n")
@@ -164,7 +190,7 @@ print.summary.batss = function(x, ...){
       cli_h3("Scenarios:\n")
       print(object$H0$scenario,row.names=FALSE)
       cat(" where 0 = no stop, 1 = efficacy stop, 2 = futility stop\n")
-      if(any(object$H0$scenario[,object$H0$target$par$id]==3)){
+      if(any(object$H0$scenario[,object$H1$target$id[-nrow(object$H0$target)+c(0:1)]]==3)){
         cat(",\n       3 = simultaneous efficacy and futility stops")
       }else{cat("\n")}
     }
@@ -178,9 +204,7 @@ print.summary.batss = function(x, ...){
     #
     cat("\n")
     cli_h3("Target parameters:\n")
-    temp = cbind(object$H1$efficacy[,-(5:6)],object$H1$futility[,7])
-    colnames(temp)[c(1,5,6)] = c("","efficacy","futility")
-    print(temp,row.names=FALSE)
+    print(object$H1$target,row.names=FALSE)
     #
     if(object$extended>0){
       cat("\n")
@@ -199,7 +223,7 @@ print.summary.batss = function(x, ...){
       cli_h3("Scenarios:\n")
       print(object$H1$scenario,row.names=FALSE)
       cat(" where 0 = no stop, 1 = efficacy stop, 2 = futility stop")
-      if(any(object$H1$scenario[,object$H1$target$par$id]==3)){
+      if(any(object$H1$scenario[,object$H1$target$id[-nrow(object$H1$target)+c(0:1)]]==3)){
         cat(",\n       3 = simultaneous efficacy and futility stops")
       }else{cat("\n")}
     }
