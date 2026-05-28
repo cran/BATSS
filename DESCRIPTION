@@ -1,7 +1,7 @@
 Package: BATSS
 Title: Bayesian Adaptive Trial Simulator Software (BATSS) for
         Generalised Linear Models
-Version: 1.1.1
+Version: 1.2.0
 Authors@R: c(
   person("Dominique-Laurent", "Couturier", role = c("aut", "cre"), email = "dominique.couturier@mrc-bsu.cam.ac.uk", comment = c(ORCID = "0000-0001-5774-5036")),
   person("Liz", "Ryan", role = "aut", comment = c(ORCID = "0000-0001-9367-4204")),
@@ -18,7 +18,7 @@ Imports: parallel, methods, stats, grDevices, abind, plyr, rlang,
 Additional_repositories: https://inla.r-inla-download.org/R/testing
 RoxygenNote: 7.3.3
 NeedsCompilation: no
-Packaged: 2025-10-02 22:45:42 UTC; research
+Packaged: 2026-05-28 16:19:14 UTC; research
 Author: Dominique-Laurent Couturier [aut, cre] (ORCID:
     <https://orcid.org/0000-0001-5774-5036>),
   Liz Ryan [aut] (ORCID: <https://orcid.org/0000-0001-9367-4204>),
@@ -28,4 +28,4 @@ Author: Dominique-Laurent Couturier [aut, cre] (ORCID:
     <https://orcid.org/0000-0002-3640-079X>)
 Maintainer: Dominique-Laurent Couturier <dominique.couturier@mrc-bsu.cam.ac.uk>
 Repository: CRAN
-Date/Publication: 2025-10-02 23:20:02 UTC
+Date/Publication: 2026-05-28 17:00:12 UTC

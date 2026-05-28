@@ -35,7 +35,7 @@ summary.batss = function(object, extended=NULL, ...){
   if (object$par$H0) {
     
     # sample sizes
-    res$H0$sample.sizes <- object$H0$sample[,1:sum(object$beta$target)]    
+    res$H0$sample.sizes <- object$H0$sample[,1:nrow(object$par$group)]
     # target parameters
     res$H0$target <- object$H0$target
     temp = rbind(object$H0$target$par,object$H0$target$global)
@@ -74,7 +74,7 @@ summary.batss = function(object, extended=NULL, ...){
   if(object$par$H1){
 
     # sample sizes
-    res$H1$sample.sizes <- object$H1$sample[,1:sum(object$beta$target)]
+    res$H1$sample.sizes <- object$H1$sample[,1:nrow(object$par$group)]
     # target parameters
     res$H1$target <- object$H1$target
     temp = rbind(object$H1$target$par,object$H1$target$global)
@@ -125,10 +125,10 @@ summary.batss = function(object, extended=NULL, ...){
 print.summary.batss = function(x, ...){
   object = x
   cat("\n")
-  if(!is.null(object$par$RAR)){
+  if(nrow(object$sample) > 1){
     cli_h1("Bayesian Adaptive Design with Laplace Approx.")
   }else{
-    cli_h1("MAMS with Laplace Approx.")
+    cli_h1("Bayesian Fixed Design with Laplace Approx.")
   }
   cat("  (",length(object$par$seed)," Monte Carlo samples)\n",sep="")
   cat("\n")
@@ -190,7 +190,7 @@ print.summary.batss = function(x, ...){
       cli_h3("Scenarios:\n")
       print(object$H0$scenario,row.names=FALSE)
       cat(" where 0 = no stop, 1 = efficacy stop, 2 = futility stop\n")
-      if(any(object$H0$scenario[,object$H1$target$id[-nrow(object$H0$target)+c(0:1)]]==3)){
+      if(any(object$H0$scenario[,object$H0$target$id[-nrow(object$H0$target)+c(0:1)]]==3)){
         cat(",\n       3 = simultaneous efficacy and futility stops")
       }else{cat("\n")}
     }

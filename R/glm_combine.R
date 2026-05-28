@@ -19,7 +19,7 @@ batss.combine = function(paths, force=FALSE){# paths
             if(length(loaded)>1){
                 class.obj = rep(NA,length(loaded))
                 for(oww in 1:length(loaded)){
-                    class.obj[oww] = class(get(loaded[oww]))=="batss"
+                    class.obj[oww] = inherits(get(loaded[oww]),"batss")
                 }
                 loaded = loaded[class.obj][1]
             }
@@ -77,7 +77,7 @@ batss.combine = function(paths, force=FALSE){# paths
         fut.g  = batss.res.fg(estimate,id.target,n.look)
         sample = batss.res.s1(trial_r,group=out$par$group$id,
                               type=c(apply(estimate[,"type",,drop=FALSE],2:3,paste0,collapse="")),
-                              early=apply(estimate[,"look",,drop=TRUE]<n.look,2,all))
+                              early=c(apply(estimate[,"look",,drop=FALSE]<n.look,2:3,all)))
         scenario = batss.res.s2(sample,target=id.target$id)
         out[[Hw[hw]]] = list(estimate = estimate,
                         target   = list(par=tar.p,global=tar.g),

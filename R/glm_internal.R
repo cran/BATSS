@@ -136,7 +136,7 @@ batss.trial = function(int,data,model,link,family,beta,prob0,
     assign("var",var , envir = env)
     assign("var.control",var.control , envir = env)
     assign("N", id.look$n[n.look], envir = env)  
-    assign("ref",id.group$ref, envir = env)
+    assign("ref",id.group$reference, envir = env)
     
     #call functions from 'var'
     pos.col <- 2                                                                             # initialize the column indicator (starting at two, column one is the response)
@@ -171,12 +171,14 @@ batss.trial = function(int,data,model,link,family,beta,prob0,
                        "cloglog" = INLA::inla.link.cloglog(XB, inverse=TRUE)),envir=env)
           
     tmp_nam <- names(var)[1] 
-    args_ <- plyr::.(n=m,mu=mu)                                                             # create a quoted(!) list of available 'ingredients' 
+    args_ <- plyr::.(n=m,mu=mu)                                                             # create a quoted(!) list of available 'ingredients'
     if (!(identical(var[[1]],rbinom) || identical(var[[1]],rnbinom))) {
-      names(args_)[1:2] <- formalArgs(var[[1]])[1:2]  
+      names(args_)[1:2] <- formalArgs(var[[1]])[1:2]
     } else {
       if (identical(var[[1]],rbinom)) {
         names(args_)[1:2] <- c("n","prob")
+      } else if (identical(var[[1]],rnbinom)) {
+        names(args_)[1:2] <- c("n","mu")
       }
     }                                                                                       # rename the list objects to the names required by specified formula (NOTE: the order of the items is set, if a function requires a different order this will not work, clever rearranging may be needed)
     if (tmp_nam %in% names(var.control)) args_ <- c(args_, var.control[[tmp_nam]])          # add extra arguments if provided
@@ -197,24 +199,25 @@ batss.trial = function(int,data,model,link,family,beta,prob0,
     #cat("C")    
     
     dots <- rlang::dots_list(...,.named=TRUE) # dots=NULL
-    
+    if ("control.family" %in% names(dots)) {
+      dots$control.family <- c(dots$control.family,list(control.link=list(model=link)))
+    }
+
     # loop
     #if(INLA::inla.os.type()=="linux"&!is.na(linux.os)){
-    #    INLA::inla.binary.install(os=linux.os,verbose=TRUE,md5.check=FALSE)       
+    #    INLA::inla.binary.install(os=linux.os,verbose=TRUE,md5.check=FALSE)
     #    }
 
     for(lw in 1:n.look){# lw=0; lw=lw+1
         # size
         #cat(.p("look:",lw,"\n"))
         temp = table(data[,groupvar])
-        id.look[lw,names(temp)] = temp 
-        assign("n",temp, envir = env)  
-        assign("ref",id.group$ref, envir = env) 
+        id.look[lw,names(temp)] = temp
+        assign("n",temp, envir = env)
+        assign("ref",id.group$reference, envir = env)
         #cat("D")
-        # fit 
+        # fit
         if ("control.family" %in% names(dots)) {
-          control.link <- list(control.link=list(model=link))
-          dots$control.family <- c(dots$control.family,control.link)
           # fit = inla(formula=model, data=data, family=family,
            #           verbose=FALSE,dots)     does nor  work like this
           fit = do.call(INLA::inla,c(list(formula=model, data=data, family=family,
@@ -282,8 +285,16 @@ batss.trial = function(int,data,model,link,family,beta,prob0,
         eff.target = apply(mx.efficacy.lt[1:lw,,drop=FALSE],2,any)
         fut.target = apply(mx.futility.lt[1:lw,,drop=FALSE],2,any)
 
-        if (!is.null(eff.arm)) eff.stop = eff.trial(eff.target) else eff.stop = FALSE 
-        if (!is.null(fut.arm)) fut.stop = fut.trial(fut.target) else fut.stop = FALSE
+        if (!is.null(eff.arm)) {
+          eff.stop = R.utils::doCall(eff.trial, args = c(list(eff.target = eff.target), eff.trial.control))
+        } else {
+          eff.stop = FALSE
+        }
+        if (!is.null(fut.arm)) {
+          fut.stop = R.utils::doCall(fut.trial, args = c(list(fut.target = fut.target), fut.trial.control))
+        } else {
+          fut.stop = FALSE
+        }
         #---
         # efficacy       
         if(any(mx.efficacy.lt[lw,aw])){
@@ -334,7 +345,7 @@ batss.trial = function(int,data,model,link,family,beta,prob0,
                 #prob = .eval(RAR,envir=env) 
                 assign("n",unlist(id.look[lw, id.group$id]),envir = env)  
                 #assign ingredients to environment 'env' 
-                assign("ref",id.group$ref,envir = env)
+                assign("ref",id.group$reference,envir = env)
                 assign("N",id.look$n[n.look],envir = env)
                 assign("RAR.control", RAR.control, envir = env)
                 prob = R.utils::doCall(RAR, args = c(plyr::.(posterior=posterior,n=n,N=N,ref=ref,active=active), RAR.control) ,envir = env)      #call function RAR in environment 'env'
@@ -381,7 +392,6 @@ batss.trial = function(int,data,model,link,family,beta,prob0,
             # response
             X = model.matrix(model[-2], data = new)                                           # call model matrix from formula object 
             #---
-            if(ncol(X)!=length(beta)){"ncol(X) != length(beta)"}
             XB = X%*%beta[colnames(X)]
             assign("mu",switch(link,
                                "identity" = XB,
@@ -394,13 +404,15 @@ batss.trial = function(int,data,model,link,family,beta,prob0,
                                "cloglog"  = INLA::inla.link.cloglog(XB, inverse=TRUE)),envir=env)
             
             tmp_nam <- names(var)[1] 
-            args_ <- plyr::.(n=m,mu=mu)                                                             # create a quoted(!) list of available 'ingredients' 
+            args_ <- plyr::.(n=m,mu=mu)                                                             # create a quoted(!) list of available 'ingredients'
             if (!(identical(var[[1]],rbinom) || identical(var[[1]],rnbinom))) {
-              names(args_)[1:2] <- formalArgs(var[[1]])[1:2]  
+              names(args_)[1:2] <- formalArgs(var[[1]])[1:2]
             } else {
               if (identical(var[[1]],rbinom)) {
                 names(args_)[1:2] <- c("n","prob")
-              } 
+              } else if (identical(var[[1]],rnbinom)) {
+                names(args_)[1:2] <- c("n","mu")
+              }
             }
             
             # rename the list objects to the names required by specified formula (NOTE: the order of the items is set, if a function requires a different order this will not work, clever rearranging may be needed)

@@ -13,7 +13,7 @@
 #' @param RAR A function defining the response-adaptive randomisation probabilities of each group - reference group included - with the same group names and ordering as used in '`prob0`'. Arguments of this function will typically consider 'BATSS' ingredients. Check [RAR.trippa] and [RAR.optimal] for examples. If `RAR = NULL` (default), the probabilities/ratios indicated under `prob0` will be used throughout (fixed allocation probabilities).
 #' @param RAR.control An optional list of control parameters for the function provided in '`RAR`'. 
 #' @param N A scalar indicating the maximum sample size.
-#' @param interim A list of parameters related to interim analyses. Currently, only '`recruited`' is available.  It consists in a vector of integers indicating the number of completed observations at each look, last excluded, in increasing order.
+#' @param interim A list of parameters related to interim analyses. Currently, only '`recruited`' is available.  It consists in a vector of integers indicating the number of completed observations at each look, last excluded, in increasing order. Setting `interim = NA` specifies a fixed (non-adaptive) design with a single look at the maximum sample size `N`.
 #' @param prob0 A named vector with initial allocation probabilities. Names need to correspond to the levels of the grouping variable. If `RAR = NULL`, these probabilities/ratios will be used throughout (fixed allocation probabilities).
 #' @param delta.eff A vector (of length equal to the number of looks (i.e., number of interims + 1)) of clinically meaningful treatment effect values (on the linear predictor scale) to be used to define the efficacy-related posterior probabilities for each target parameter at each look. If a scalar is provided, the same value is used at each look. The default is `delta.eff = 0`. 
 #' @param delta.fut A vector (of length equal to the number of looks (i.e., number of interims + 1)) of clinically meaningful treatment effect values (on the linear predictor scale) to be used to define the futility-related posterior probabilities for each target parameter at each look. If a scalar is provided, the same value is used at each look. The default is `delta.fut = delta.eff`. 
@@ -123,20 +123,25 @@ if (!(family %in% names(INLA::inla.models()$likelihood))){
 }
 if (!(link %in% INLA::inla.models()$likelihood[[family]]$link) || !(link %in% c("identity","log","logit","probit","robit","cauchit","loglog","cloglog")))
   stop("'link' not supported, see help files and inla documentation for available link functions")
-if (!is.null(interim)){
+if (identical(interim, NA)){
+  interim.recruited = NULL
+} else if (!is.null(interim)){
   if(!inherits(interim,"list")){stop("'interim' should be a list")}
   interim.recruited = interim$recruited
-}else{
-    stop("'interim' should be provided")
-  } 
+} else {
+  stop("'interim' should be provided")
+}
+if (!is.null(RAR) && is.null(interim.recruited)){
+  warning("'RAR' is not NULL but 'interim = NA' (fixed design): RAR will have no effect")
+}
 if (!is.null(interim.recruited) && !is.numeric(unlist(interim.recruited))) 
   stop("'interim.recruited' must be a (list of) numeric vector(s)")
 if (!is.null(interim.recruited) && any(interim.recruited < 0)) 
   stop("negative interim recruitment numbers not allowed")
 if ((N < 0) || length(N)>1) {
   stop("total sample size 'N' must be a positive scalar")
-  N <-  floor(N)
 }
+N <- floor(N)
 if (length(which)>length(beta))
   stop("number of targets greater than number of parameters")
 if ((!is.null(RAR) && !(is.function(RAR))) || 
@@ -149,7 +154,7 @@ if (!is.null(interim.recruited) && any(interim.recruited > N)) {
   warning("some interim analyses are outside the maximum sample size and will be ignored")
   interim.recruited <- interim.recruited[interim.recruited<N]
 }
-if (all(prob0<0) && sum(prob0)!=1)
+if (all(prob0 >= 0) && all(prob0 <= 1) && sum(prob0) != 1)
   warning("sum of 'prob0' not equal to 1")
 
 
@@ -308,7 +313,7 @@ if(!(is.null(eff.arm) || is.null(fut.arm))){
     delta.eff = delta.fut = tmp
 }}  
 
-if (length(delta.RAR==1)) delta.RAR = rep(delta.RAR,n.look)
+if (length(delta.RAR)==1) delta.RAR = rep(delta.RAR,n.look)
 if (length(delta.RAR)!=n.look) stop("length of delta.RAR not equal to number of looks")
 
 # trial stopping rules
@@ -517,7 +522,11 @@ if(H0){FE[,'Beta (H0)'] = beta0}
 if(H1){FE[,'Beta (H1)'] = beta}
 # 
 par = list(RAR=RAR, group=id.group[,c("pos","id","reference")],
-           seed=id.seed, H0=H0, H1=H1, version=utils::packageVersion("BATSS"))
+           seed=id.seed, H0=H0, H1=H1, version=utils::packageVersion("BATSS"),
+           eff.arm=eff.arm, eff.arm.control=eff.arm.control,
+           eff.trial=eff.trial, eff.trial.control=eff.trial.control,
+           fut.arm=fut.arm, fut.arm.control=fut.arm.control,
+           fut.trial=fut.trial, fut.trial.control=fut.trial.control)
 out = list(beta = FE, look = look, par=par)    
 if(H0){
     out$H0 = res_H0

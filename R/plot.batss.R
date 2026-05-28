@@ -26,8 +26,8 @@ plot.batss = function(x, which=1:4, ask=TRUE, hypothesis="H1",
     if(ask){oask <- devAskNewPage(TRUE)
     on.exit(devAskNewPage(oask))
     }
-    oldpar <- par(no.readonly = TRUE) 
-    on.exit(par(oldpar)) 
+    oldpar <- par(no.readonly = TRUE)
+    on.exit(par(oldpar), add = TRUE)
     mc = match.call()    
     # hypothesis 
     if(is.na(match(hypothesis,names(x)))){
@@ -102,11 +102,11 @@ plot.batss = function(x, which=1:4, ask=TRUE, hypothesis="H1",
         }
     }    
     # beta
-    if(is.list(beta)){# 
+    if(is.list(beta)){#
         beta.col = ifelse(!is.null(beta[["col"]]),beta[["col"]],"blue")
-        beta.lwd = ifelse(!is.null(beta[["lwd"]]),beta[["lwd"]],1.5)    
-        beta.lty = ifelse(!is.null(beta[["lty"]]),beta[["lty"]],1)    
-        percentage     = TRUE
+        beta.lwd = ifelse(!is.null(beta[["lwd"]]),beta[["lwd"]],1.5)
+        beta.lty = ifelse(!is.null(beta[["lty"]]),beta[["lty"]],1)
+        #beta     = TRUE
     }else{
         if(!is.logical(beta)){
             stop("beta should be a list or a logical")
