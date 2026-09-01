@@ -1,8 +1,8 @@
-dbc669a2105c9ea4e6a7d6a765b38bd7 *DESCRIPTION
+9bb491f35c4a6b8eeafa1b9bc8160382 *DESCRIPTION
 dab7bbc84fece0608dedd06d63830072 *NAMESPACE
 dc8660f82176f58c1a48f6a440992ad3 *R/BATSS-package.R
 52dbe7c2afd98045689ce118a4b7e08c *R/example_functions.R
-c6a8ee0e1236c4e98a2ece39e8670848 *R/glm.R
+7a9cfbd2d44d8d7511ab147d9be09497 *R/glm.R
 06a563e22173b1cc30b4728952b615cf *R/glm_combine.R
 edf69fcce5321b11a8a5958530ac5b0b *R/glm_generic.R
 d477ad5dd9cb225a34c43638ddf885ef *R/glm_internal.R
